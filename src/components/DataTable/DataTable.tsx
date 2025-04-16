@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Location } from '@/services/locationService';
 import { LocationCell } from './LocationCell';
@@ -22,8 +21,6 @@ interface DataTableProps {
   locations: Location[];
 }
 
-const ITEMS_PER_PAGE = 5;
-
 const DataTable: React.FC<DataTableProps> = ({ locations }) => {
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
@@ -34,6 +31,7 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
     }), {})
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20; // Change from 5 to 20
   
   const { toast } = useToast();
   const navigate = useNavigate();

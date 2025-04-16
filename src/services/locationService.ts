@@ -1,4 +1,3 @@
-
 export interface Location {
   id: string;
   name: string;
@@ -31,7 +30,7 @@ export interface Location {
 }
 
 export const fetchLocations = (): Location[] => {
-  return [
+  const baseLocations = [
     {
       id: "loc-001",
       name: "McDonald's - Downtown",
@@ -243,4 +242,38 @@ export const fetchLocations = (): Location[] => {
       isFavorite: true
     }
   ];
+
+  // Generate additional locations to reach 47 total
+  const additionalLocations: Location[] = Array.from({ length: 40 }, (_, index) => ({
+    id: `loc-${(index + 8).toString().padStart(3, '0')}`,
+    name: `Location ${index + 8}`,
+    address: `${index + 1} Sample St, New York, NY 1000${index + 1}`,
+    detailedInfo: `Additional details for Location ${index + 8}. Unique features and description.`,
+    metrics: {
+      visitors: {
+        count: Math.floor(Math.random() * 10000),
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        percentage: Math.floor(Math.random() * 20)
+      },
+      revenue: {
+        amount: Math.floor(Math.random() * 100000),
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        percentage: Math.floor(Math.random() * 15)
+      },
+      engagement: {
+        score: Number((Math.random() * 10).toFixed(1)),
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        percentage: Math.floor(Math.random() * 10)
+      },
+      satisfaction: {
+        score: Number((Math.random() * 5).toFixed(1)),
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        percentage: Math.floor(Math.random() * 8)
+      }
+    },
+    reportStatus: ['available', 'pending', 'none'][Math.floor(Math.random() * 3)] as 'available' | 'pending' | 'none',
+    isFavorite: Math.random() > 0.7
+  }));
+
+  return [...baseLocations, ...additionalLocations];
 };
