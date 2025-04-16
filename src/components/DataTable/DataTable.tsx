@@ -111,7 +111,7 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
   const selectedCount = Object.values(selectedRows).filter(Boolean).length;
 
   const renderPagination = () => (
-    <Pagination className="my-4">
+    <Pagination className="my-4 flex justify-end">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious 
@@ -162,17 +162,17 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
   );
 
   return (
-    <div className="w-full overflow-auto rounded-md border border-table-border bg-white shadow-sm">
+    <div className="w-full overflow-auto rounded-md border border-table-border bg-white shadow-sm relative">
       {/* Pagination - Top */}
       {renderPagination()}
       
       {/* Floating Action Bar */}
       {selectedCount > 0 && (
-        <div className="sticky top-0 z-10 flex items-center justify-between bg-slate-50 p-2 shadow-sm border-b border-slate-200 transition-all">
-          <div className="text-sm font-medium text-slate-700">
-            {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
-          </div>
-          <div className="flex gap-2">
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-slate-50 p-2 shadow-sm border-b border-slate-200 transition-all">
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-medium text-slate-700 mr-4">
+              {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
+            </div>
             <button 
               onClick={handleBulkDelete}
               className="rounded-full p-2 hover:bg-slate-200 transition-colors"
