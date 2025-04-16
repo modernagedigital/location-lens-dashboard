@@ -1,9 +1,30 @@
+
 export interface Location {
   id: string;
   name: string;
   address: string;
   detailedInfo: string;
   metrics: {
+    reviews?: {
+      count: number;
+      trend: 'up' | 'down';
+      percentage: number;
+    };
+    sessions?: {
+      count: number;
+      trend: 'up' | 'down';
+      percentage: number;
+    };
+    organicSessions?: {
+      count: number;
+      trend: 'up' | 'down';
+      percentage: number;
+    };
+    connections?: {
+      count: number;
+      trend: 'up' | 'down';
+      percentage: number;
+    };
     visitors: {
       count: number;
       trend: 'up' | 'down';
@@ -37,6 +58,26 @@ export const fetchLocations = (): Location[] => {
       address: "123 Main St, New York, NY 10001",
       detailedInfo: "24/7 operation, Drive-thru available, Wi-Fi enabled location with outdoor seating. Recently renovated with expanded dining area.",
       metrics: {
+        reviews: {
+          count: 542,
+          trend: 'up',
+          percentage: 15
+        },
+        sessions: {
+          count: 8760,
+          trend: 'up',
+          percentage: 12
+        },
+        organicSessions: {
+          count: 6540,
+          trend: 'up',
+          percentage: 10
+        },
+        connections: {
+          count: 237,
+          trend: 'up',
+          percentage: 8
+        },
         visitors: {
           count: 5280,
           trend: 'up',
@@ -250,6 +291,26 @@ export const fetchLocations = (): Location[] => {
     address: `${index + 1} Sample St, New York, NY 1000${index + 1}`,
     detailedInfo: `Additional details for Location ${index + 8}. Unique features and description.`,
     metrics: {
+      reviews: {
+        count: Math.floor(Math.random() * 1000),
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        percentage: Math.floor(Math.random() * 20)
+      },
+      sessions: {
+        count: Math.floor(Math.random() * 10000),
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        percentage: Math.floor(Math.random() * 15)
+      },
+      organicSessions: {
+        count: Math.floor(Math.random() * 8000),
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        percentage: Math.floor(Math.random() * 12)
+      },
+      connections: {
+        count: Math.floor(Math.random() * 500),
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        percentage: Math.floor(Math.random() * 10)
+      },
       visitors: {
         count: Math.floor(Math.random() * 10000),
         trend: Math.random() > 0.5 ? 'up' : 'down',
@@ -277,3 +338,4 @@ export const fetchLocations = (): Location[] => {
 
   return [...baseLocations, ...additionalLocations];
 };
+

@@ -207,11 +207,11 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
             <th className="w-8 px-4 py-3 text-left"></th>
             <th className="w-8 px-4 py-3 text-left"></th>
             <th className="px-4 py-3 text-left">Location</th>
-            <th className="px-4 py-3 text-center">Visitors</th>
-            <th className="px-4 py-3 text-center">Revenue</th>
-            <th className="px-4 py-3 text-center">Engagement</th>
-            <th className="px-4 py-3 text-center">Satisfaction</th>
-            <th className="px-4 py-3 text-center">Report</th>
+            <th className="px-4 py-3 text-center">Total Reviews</th>
+            <th className="px-4 py-3 text-center">Sessions</th>
+            <th className="px-4 py-3 text-center">Organic Sessions</th>
+            <th className="px-4 py-3 text-center">Connections</th>
+            <th className="px-4 py-3 text-center">Active Sync Alerts</th>
           </tr>
         </thead>
         <tbody>
@@ -245,56 +245,41 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
                   />
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <LocationCell
-                      name={location.name}
-                      address={location.address}
-                      expanded={!!expandedRows[location.id]}
-                    />
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleExpand(location.id);
-                      }}
-                      className="ml-2 p-1 rounded-full hover:bg-gray-100"
-                    >
-                      {expandedRows[location.id] ? (
-                        <ChevronUp className="h-4 w-4 text-gray-500" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4 text-gray-500" />
-                      )}
-                    </button>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <MetricCell
-                    value={location.metrics.visitors.count.toLocaleString()}
-                    trend={location.metrics.visitors.trend}
-                    percentage={location.metrics.visitors.percentage}
+                  <LocationCell
+                    name={location.name}
+                    address={location.address}
+                    expanded={!!expandedRows[location.id]}
                   />
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-center">
                   <MetricCell
-                    value={`$${location.metrics.revenue.amount.toLocaleString()}`}
-                    trend={location.metrics.revenue.trend}
-                    percentage={location.metrics.revenue.percentage}
+                    value={location.metrics.reviews?.count.toLocaleString() || '0'}
+                    trend={location.metrics.reviews?.trend || 'up'}
+                    percentage={location.metrics.reviews?.percentage || 0}
                   />
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-center">
                   <MetricCell
-                    value={location.metrics.engagement.score.toFixed(1)}
-                    trend={location.metrics.engagement.trend}
-                    percentage={location.metrics.engagement.percentage}
+                    value={location.metrics.sessions?.count.toLocaleString() || '0'}
+                    trend={location.metrics.sessions?.trend || 'up'}
+                    percentage={location.metrics.sessions?.percentage || 0}
                   />
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-center">
                   <MetricCell
-                    value={location.metrics.satisfaction.score.toFixed(1)}
-                    trend={location.metrics.satisfaction.trend}
-                    percentage={location.metrics.satisfaction.percentage}
+                    value={location.metrics.organicSessions?.count.toLocaleString() || '0'}
+                    trend={location.metrics.organicSessions?.trend || 'up'}
+                    percentage={location.metrics.organicSessions?.percentage || 0}
                   />
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-center">
+                  <MetricCell
+                    value={location.metrics.connections?.count.toLocaleString() || '0'}
+                    trend={location.metrics.connections?.trend || 'up'}
+                    percentage={location.metrics.connections?.percentage || 0}
+                  />
+                </td>
+                <td className="px-4 py-3 text-center">
                   <ReportCell status={location.reportStatus} id={location.id} />
                 </td>
               </tr>
