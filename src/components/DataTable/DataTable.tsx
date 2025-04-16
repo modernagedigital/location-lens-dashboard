@@ -1,28 +1,19 @@
+
 import React, { useState } from 'react';
 import { Location } from '@/services/locationService';
 import { LocationCell } from './LocationCell';
 import { MetricCell } from './MetricCell';
 import { ReportCell } from './ReportCell';
-import { Star, ChevronDown, ChevronUp, Trash, Edit, Settings, Plus } from 'lucide-react';
+import { Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious, 
-  PaginationEllipsis 
-} from '@/components/ui/pagination';
 
 interface DataTableProps {
   locations: Location[];
 }
 
 const DataTable: React.FC<DataTableProps> = ({ locations }) => {
-  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
   const [favorites, setFavorites] = useState<Record<string, boolean>>(
     locations.reduce((acc, location) => ({
@@ -31,17 +22,10 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
     }), {})
   );
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 20; // Change from 5 to 20
+  const ITEMS_PER_PAGE = 20;
   
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const toggleExpand = (id: string) => {
-    setExpandedRows(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
 
   const toggleSelect = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -76,230 +60,156 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedLocations = locations.slice(startIndex, endIndex);
 
-  // Action handlers for the floating action bar
-  const handleBulkDelete = () => {
-    const selectedCount = Object.values(selectedRows).filter(Boolean).length;
-    toast({
-      title: `${selectedCount} locations deleted`,
-      description: 'The selected locations have been removed.',
-      duration: 3000,
-    });
-    // Reset selected rows
-    setSelectedRows({});
-  };
-
-  const handleBulkFavorite = () => {
-    const selectedIds = Object.keys(selectedRows).filter(id => selectedRows[id]);
-    const updatedFavorites = { ...favorites };
-    
-    selectedIds.forEach(id => {
-      updatedFavorites[id] = true;
-    });
-    
-    setFavorites(updatedFavorites);
-    
-    toast({
-      title: `${selectedIds.length} locations favorited`,
-      description: 'The selected locations have been added to your favorites.',
-      duration: 3000,
-    });
-  };
-
   // Selected count for floating action bar
   const selectedCount = Object.values(selectedRows).filter(Boolean).length;
+  const selectedIndicator = `${startIndex + 1}-${Math.min(endIndex, locations.length)} of ${locations.length}`;
 
   const renderPagination = () => (
-    <Pagination className="my-4 flex justify-end">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious 
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-          />
-        </PaginationItem>
+    <div className="flex items-center justify-end gap-2">
+      <span className="text-sm text-gray-500">{selectedIndicator}</span>
+      <div className="flex items-center">
+        <button 
+          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          className="pagination-item"
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
         
-        {Array.from({ length: totalPages }).map((_, i) => {
-          const pageNum = i + 1;
-          // Show first page, current page, last page, and pages around current page
-          if (
-            pageNum === 1 || 
-            pageNum === totalPages || 
-            (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-          ) {
-            return (
-              <PaginationItem key={pageNum}>
-                <PaginationLink 
-                  isActive={currentPage === pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                >
-                  {pageNum}
-                </PaginationLink>
-              </PaginationItem>
-            );
-          } else if (
-            (pageNum === 2 && currentPage > 3) || 
-            (pageNum === totalPages - 1 && currentPage < totalPages - 2)
-          ) {
-            return (
-              <PaginationItem key={`ellipsis-${pageNum}`}>
-                <PaginationEllipsis />
-              </PaginationItem>
-            );
-          }
-          return null;
-        })}
+        <button className="pagination-item active">
+          {currentPage}
+        </button>
         
-        <PaginationItem>
-          <PaginationNext 
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+        <button 
+          className="pagination-item"
+          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+        >
+          {currentPage + 1}
+        </button>
+        
+        <span className="pagination-item">...</span>
+        
+        <button 
+          className="pagination-item"
+          onClick={() => setCurrentPage(totalPages)}
+        >
+          {totalPages}
+        </button>
+        
+        <button 
+          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          className="pagination-item"
+          disabled={currentPage === totalPages}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
   );
 
   return (
-    <div className="w-full overflow-auto rounded-md border border-table-border bg-white shadow-sm relative">
-      {/* Pagination - Top */}
-      {renderPagination()}
+    <div className="w-full relative">
+      {/* Header with pagination */}
+      <div className="flex justify-between items-center p-4 mb-4">
+        <div></div>
+        {renderPagination()}
+      </div>
       
       {/* Floating Action Bar */}
       {selectedCount > 0 && (
-        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-slate-50 p-2 shadow-sm border-b border-slate-200 transition-all">
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-white p-2 shadow-sm border-b transition-all">
           <div className="flex items-center gap-2">
-            <div className="text-sm font-medium text-slate-700 mr-4">
+            <div className="text-sm font-medium text-gray-700 ml-10">
               {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
             </div>
-            <button 
-              onClick={handleBulkDelete}
-              className="rounded-full p-2 hover:bg-slate-200 transition-colors"
-              aria-label="Delete selected"
-            >
-              <Trash className="h-5 w-5 text-slate-700" />
-            </button>
-            <button 
-              onClick={handleBulkFavorite}
-              className="rounded-full p-2 hover:bg-slate-200 transition-colors"
-              aria-label="Star selected"
-            >
-              <Star className="h-5 w-5 text-slate-700" />
-            </button>
-            <button 
-              className="rounded-full p-2 hover:bg-slate-200 transition-colors"
-              aria-label="Edit selected"
-            >
-              <Edit className="h-5 w-5 text-slate-700" />
-            </button>
-            <button 
-              className="rounded-full p-2 hover:bg-slate-200 transition-colors"
-              aria-label="Settings"
-            >
-              <Settings className="h-5 w-5 text-slate-700" />
-            </button>
           </div>
         </div>
       )}
       
-      <table className="w-full border-collapse">
-        <thead className="bg-table-header text-sm font-medium text-gray-600">
+      <table className="brightlocal-table">
+        <thead>
           <tr>
-            <th className="w-8 px-4 py-3 text-left"></th>
-            <th className="w-8 px-4 py-3 text-left"></th>
-            <th className="px-4 py-3 text-left">Location</th>
-            <th className="px-4 py-3 text-center">Total Reviews</th>
-            <th className="px-4 py-3 text-center">Sessions</th>
-            <th className="px-4 py-3 text-center">Organic Sessions</th>
-            <th className="px-4 py-3 text-center">Connections</th>
-            <th className="px-4 py-3 text-center">Active Sync Alerts</th>
+            <th className="w-12">
+              <input
+                type="checkbox"
+                onChange={() => {
+                  const allSelected = Object.keys(selectedRows).length === locations.length;
+                  if (allSelected) {
+                    setSelectedRows({});
+                  } else {
+                    const newSelected: Record<string, boolean> = {};
+                    locations.forEach(location => {
+                      newSelected[location.id] = true;
+                    });
+                    setSelectedRows(newSelected);
+                  }
+                }}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+            </th>
+            <th className="w-12"></th>
+            <th className="min-w-[200px]">
+              <div className="flex items-center gap-2">
+                <span>Location</span>
+                <ChevronDown className="h-4 w-4" />
+              </div>
+            </th>
+            <th className="text-center">Rankings up</th>
+            <th className="text-center">Rankings down</th>
+            <th className="text-center">Header name</th>
+            <th className="text-center">Header name</th>
           </tr>
         </thead>
         <tbody>
           {paginatedLocations.map((location) => (
-            <React.Fragment key={location.id}>
-              <tr 
-                className={cn(
-                  "border-b border-table-border cursor-pointer transition-colors",
-                  selectedRows[location.id] ? "bg-table-rowSelected" : "bg-table-row hover:bg-table-rowHover"
-                )}
-                onClick={() => handleRowClick(location.id)}
-              >
-                <td className="px-4 py-3" onClick={(e) => toggleSelect(location.id, e)}>
-                  <div className="flex items-center justify-center h-5 w-5">
-                    <input
-                      type="checkbox"
-                      checked={!!selectedRows[location.id]}
-                      onChange={() => {}}
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                  </div>
-                </td>
-                <td className="px-4 py-3" onClick={(e) => toggleFavorite(location.id, e)}>
-                  <Star
-                    className={cn(
-                      "h-5 w-5 transition-colors", 
-                      favorites[location.id] 
-                        ? "fill-yellow-400 text-yellow-400" 
-                        : "text-gray-300 hover:text-gray-400"
-                    )}
+            <tr 
+              key={location.id}
+              className="cursor-pointer"
+              onClick={() => handleRowClick(location.id)}
+            >
+              <td className="w-12" onClick={(e) => toggleSelect(location.id, e)}>
+                <div className="flex items-center justify-center h-5 w-5">
+                  <input
+                    type="checkbox"
+                    checked={!!selectedRows[location.id]}
+                    onChange={() => {}}
+                    className="h-4 w-4 rounded border-gray-300"
                   />
-                </td>
-                <td className="px-4 py-3">
-                  <LocationCell
-                    name={location.name}
-                    address={location.address}
-                    expanded={!!expandedRows[location.id]}
-                  />
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <MetricCell
-                    value={location.metrics.reviews?.count.toLocaleString() || '0'}
-                    trend={location.metrics.reviews?.trend || 'up'}
-                    percentage={location.metrics.reviews?.percentage || 0}
-                  />
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <MetricCell
-                    value={location.metrics.sessions?.count.toLocaleString() || '0'}
-                    trend={location.metrics.sessions?.trend || 'up'}
-                    percentage={location.metrics.sessions?.percentage || 0}
-                  />
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <MetricCell
-                    value={location.metrics.organicSessions?.count.toLocaleString() || '0'}
-                    trend={location.metrics.organicSessions?.trend || 'up'}
-                    percentage={location.metrics.organicSessions?.percentage || 0}
-                  />
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <MetricCell
-                    value={location.metrics.connections?.count.toLocaleString() || '0'}
-                    trend={location.metrics.connections?.trend || 'up'}
-                    percentage={location.metrics.connections?.percentage || 0}
-                  />
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <ReportCell status={location.reportStatus} id={location.id} />
-                </td>
-              </tr>
-              {expandedRows[location.id] && (
-                <tr className="bg-gray-50 animate-fade-in">
-                  <td colSpan={8} className="px-4 py-3">
-                    <div className="pl-16 pr-4 py-2 text-sm text-gray-600">
-                      <h4 className="font-medium mb-1">Additional Information:</h4>
-                      <p>{location.detailedInfo}</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
+                </div>
+              </td>
+              <td className="w-12" onClick={(e) => toggleFavorite(location.id, e)}>
+                <Star
+                  className={cn(
+                    "h-5 w-5 transition-colors", 
+                    favorites[location.id] 
+                      ? "fill-yellow-400 text-yellow-400" 
+                      : "text-gray-300 hover:text-gray-400"
+                  )}
+                />
+              </td>
+              <td>
+                <LocationCell
+                  name={location.name}
+                  address={location.address}
+                  expanded={false}
+                />
+              </td>
+              <td className="text-center">
+                <ReportCell status="none" id={location.id} />
+              </td>
+              <td className="text-center">
+                <ReportCell status="none" id={location.id} />
+              </td>
+              <td className="text-center">
+                <ReportCell status="none" id={location.id} />
+              </td>
+              <td className="text-center">
+                <ReportCell status="none" id={location.id} />
+              </td>
+            </tr>
           ))}
         </tbody>
       </table>
-      
-      {/* Pagination - Bottom */}
-      {renderPagination()}
     </div>
   );
 };
