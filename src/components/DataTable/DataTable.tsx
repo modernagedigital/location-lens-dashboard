@@ -4,14 +4,25 @@ import { Location } from '@/services/locationService';
 import { LocationCell } from './LocationCell';
 import { MetricCell } from './MetricCell';
 import { ReportCell } from './ReportCell';
-import { Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, ChevronDown, ChevronUp, Trash, Edit, Settings, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious, 
+  PaginationEllipsis 
+} from '@/components/ui/pagination';
 
 interface DataTableProps {
   locations: Location[];
 }
+
+const ITEMS_PER_PAGE = 5;
 
 const DataTable: React.FC<DataTableProps> = ({ locations }) => {
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
@@ -22,6 +33,7 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
       [location.id]: location.isFavorite
     }), {})
   );
+  const [currentPage, setCurrentPage] = useState(1);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -60,8 +72,137 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
     navigate(`/locations/${id}`);
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(locations.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedLocations = locations.slice(startIndex, endIndex);
+
+  // Action handlers for the floating action bar
+  const handleBulkDelete = () => {
+    const selectedCount = Object.values(selectedRows).filter(Boolean).length;
+    toast({
+      title: `${selectedCount} locations deleted`,
+      description: 'The selected locations have been removed.',
+      duration: 3000,
+    });
+    // Reset selected rows
+    setSelectedRows({});
+  };
+
+  const handleBulkFavorite = () => {
+    const selectedIds = Object.keys(selectedRows).filter(id => selectedRows[id]);
+    const updatedFavorites = { ...favorites };
+    
+    selectedIds.forEach(id => {
+      updatedFavorites[id] = true;
+    });
+    
+    setFavorites(updatedFavorites);
+    
+    toast({
+      title: `${selectedIds.length} locations favorited`,
+      description: 'The selected locations have been added to your favorites.',
+      duration: 3000,
+    });
+  };
+
+  // Selected count for floating action bar
+  const selectedCount = Object.values(selectedRows).filter(Boolean).length;
+
+  const renderPagination = () => (
+    <Pagination className="my-4">
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious 
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+          />
+        </PaginationItem>
+        
+        {Array.from({ length: totalPages }).map((_, i) => {
+          const pageNum = i + 1;
+          // Show first page, current page, last page, and pages around current page
+          if (
+            pageNum === 1 || 
+            pageNum === totalPages || 
+            (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+          ) {
+            return (
+              <PaginationItem key={pageNum}>
+                <PaginationLink 
+                  isActive={currentPage === pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                >
+                  {pageNum}
+                </PaginationLink>
+              </PaginationItem>
+            );
+          } else if (
+            (pageNum === 2 && currentPage > 3) || 
+            (pageNum === totalPages - 1 && currentPage < totalPages - 2)
+          ) {
+            return (
+              <PaginationItem key={`ellipsis-${pageNum}`}>
+                <PaginationEllipsis />
+              </PaginationItem>
+            );
+          }
+          return null;
+        })}
+        
+        <PaginationItem>
+          <PaginationNext 
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+
   return (
     <div className="w-full overflow-auto rounded-md border border-table-border bg-white shadow-sm">
+      {/* Pagination - Top */}
+      {renderPagination()}
+      
+      {/* Floating Action Bar */}
+      {selectedCount > 0 && (
+        <div className="sticky top-0 z-10 flex items-center justify-between bg-slate-50 p-2 shadow-sm border-b border-slate-200 transition-all">
+          <div className="text-sm font-medium text-slate-700">
+            {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleBulkDelete}
+              className="rounded-full p-2 hover:bg-slate-200 transition-colors"
+              aria-label="Delete selected"
+            >
+              <Trash className="h-5 w-5 text-slate-700" />
+            </button>
+            <button 
+              onClick={handleBulkFavorite}
+              className="rounded-full p-2 hover:bg-slate-200 transition-colors"
+              aria-label="Star selected"
+            >
+              <Star className="h-5 w-5 text-slate-700" />
+            </button>
+            <button 
+              className="rounded-full p-2 hover:bg-slate-200 transition-colors"
+              aria-label="Edit selected"
+            >
+              <Edit className="h-5 w-5 text-slate-700" />
+            </button>
+            <button 
+              className="rounded-full p-2 hover:bg-slate-200 transition-colors"
+              aria-label="Settings"
+            >
+              <Settings className="h-5 w-5 text-slate-700" />
+            </button>
+          </div>
+        </div>
+      )}
+      
       <table className="w-full border-collapse">
         <thead className="bg-table-header text-sm font-medium text-gray-600">
           <tr>
@@ -76,7 +217,7 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
           </tr>
         </thead>
         <tbody>
-          {locations.map((location) => (
+          {paginatedLocations.map((location) => (
             <React.Fragment key={location.id}>
               <tr 
                 className={cn(
@@ -173,6 +314,9 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
           ))}
         </tbody>
       </table>
+      
+      {/* Pagination - Bottom */}
+      {renderPagination()}
     </div>
   );
 };
