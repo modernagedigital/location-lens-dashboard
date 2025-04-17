@@ -2,12 +2,12 @@
 import React, { useState } from 'react';
 import { Location } from '@/services/locationService';
 import { LocationCell } from './LocationCell';
-import { MetricCell } from './MetricCell';
 import { ReportCell } from './ReportCell';
-import { Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, ChevronDown, ChevronLeft, ChevronRight, Trash, Edit, Settings, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface DataTableProps {
   locations: Location[];
@@ -52,6 +52,49 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
   const handleRowClick = (id: string) => {
     // Navigate to location detail page
     navigate(`/locations/${id}`);
+  };
+
+  // Action handlers for the floating action bar
+  const handleDelete = () => {
+    const selectedCount = Object.keys(selectedRows).filter(id => selectedRows[id]).length;
+    toast({
+      title: `${selectedCount} location${selectedCount !== 1 ? 's' : ''} deleted`,
+      description: "The selected locations have been removed.",
+      duration: 3000,
+    });
+    setSelectedRows({});
+  };
+
+  const handleStar = () => {
+    const selectedIds = Object.keys(selectedRows).filter(id => selectedRows[id]);
+    const newFavorites = { ...favorites };
+    
+    selectedIds.forEach(id => {
+      newFavorites[id] = true;
+    });
+    
+    setFavorites(newFavorites);
+    toast({
+      title: `${selectedIds.length} location${selectedIds.length !== 1 ? 's' : ''} starred`,
+      description: "The selected locations have been added to favorites.",
+      duration: 3000,
+    });
+  };
+
+  const handleCopy = () => {
+    toast({
+      title: "Locations copied",
+      description: "The selected locations have been copied to clipboard.",
+      duration: 3000,
+    });
+  };
+
+  const handleEdit = () => {
+    toast({
+      title: "Edit mode",
+      description: "You can now edit the selected locations.",
+      duration: 3000,
+    });
   };
 
   // Pagination logic
@@ -117,12 +160,51 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
       
       {/* Floating Action Bar */}
       {selectedCount > 0 && (
-        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-white p-2 shadow-sm border-b transition-all">
-          <div className="flex items-center gap-2">
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-white p-4 shadow-sm border-b transition-all rounded-t-md">
+          <div className="flex items-center gap-4">
             <div className="text-sm font-medium text-gray-700 ml-10">
               {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
             </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleDelete}
+                className="p-2 text-gray-600 hover:text-red-500 hover:bg-gray-100 rounded-full transition-colors"
+                title="Delete selected"
+              >
+                <Trash className="h-5 w-5" />
+              </button>
+              
+              <button 
+                onClick={handleStar}
+                className="p-2 text-gray-600 hover:text-yellow-500 hover:bg-gray-100 rounded-full transition-colors"
+                title="Add to favorites"
+              >
+                <Star className="h-5 w-5" />
+              </button>
+              
+              <button 
+                onClick={handleEdit}
+                className="p-2 text-gray-600 hover:text-blue-500 hover:bg-gray-100 rounded-full transition-colors"
+                title="Edit selected"
+              >
+                <Edit className="h-5 w-5" />
+              </button>
+              
+              <button 
+                onClick={handleCopy}
+                className="p-2 text-gray-600 hover:text-green-500 hover:bg-gray-100 rounded-full transition-colors"
+                title="Copy selected"
+              >
+                <Copy className="h-5 w-5" />
+              </button>
+            </div>
           </div>
+          <button 
+            onClick={() => setSelectedRows({})}
+            className="text-sm text-gray-500 hover:text-gray-800 px-3 py-1 rounded hover:bg-gray-100"
+          >
+            Cancel
+          </button>
         </div>
       )}
       
@@ -130,21 +212,21 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
         <thead>
           <tr>
             <th className="w-12">
-              <input
-                type="checkbox"
-                onChange={() => {
-                  const allSelected = Object.keys(selectedRows).length === locations.length;
-                  if (allSelected) {
-                    setSelectedRows({});
-                  } else {
+              <Checkbox
+                checked={Object.keys(selectedRows).length > 0 && Object.keys(selectedRows).length === locations.length}
+                onCheckedChange={(checked) => {
+                  if (checked) {
                     const newSelected: Record<string, boolean> = {};
                     locations.forEach(location => {
                       newSelected[location.id] = true;
                     });
                     setSelectedRows(newSelected);
+                  } else {
+                    setSelectedRows({});
                   }
                 }}
-                className="h-4 w-4 rounded border-gray-300"
+                aria-label="Select all"
+                className="ml-1"
               />
             </th>
             <th className="w-12"></th>
@@ -154,26 +236,29 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
                 <ChevronDown className="h-4 w-4" />
               </div>
             </th>
-            <th className="text-center">Rankings up</th>
-            <th className="text-center">Rankings down</th>
-            <th className="text-center">Header name</th>
-            <th className="text-center">Header name</th>
+            <th className="text-center">Total reviews</th>
+            <th className="text-center">Sessions</th>
+            <th className="text-center">Organic sessions</th>
+            <th className="text-center">Connections</th>
+            <th className="text-center">Active Sync Alerts</th>
           </tr>
         </thead>
         <tbody>
           {paginatedLocations.map((location) => (
             <tr 
               key={location.id}
-              className="cursor-pointer"
+              className={cn(
+                "cursor-pointer",
+                selectedRows[location.id] && "bg-blue-50"
+              )}
               onClick={() => handleRowClick(location.id)}
             >
               <td className="w-12" onClick={(e) => toggleSelect(location.id, e)}>
                 <div className="flex items-center justify-center h-5 w-5">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={!!selectedRows[location.id]}
-                    onChange={() => {}}
-                    className="h-4 w-4 rounded border-gray-300"
+                    onCheckedChange={() => {}}
+                    aria-label={`Select ${location.name}`}
                   />
                 </div>
               </td>
@@ -191,8 +276,10 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
                 <LocationCell
                   name={location.name}
                   address={location.address}
-                  expanded={false}
                 />
+              </td>
+              <td className="text-center">
+                <ReportCell status="none" id={location.id} />
               </td>
               <td className="text-center">
                 <ReportCell status="none" id={location.id} />
