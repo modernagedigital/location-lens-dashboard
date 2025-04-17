@@ -95,11 +95,11 @@
 }
 
 .brightlocal-table {
-  @apply w-full;
+  @apply w-full table-fixed;
 }
 
 .brightlocal-table th {
-  @apply px-4 py-3 text-left text-sm font-medium text-gray-600 bg-white border-b border-gray-200;
+  @apply px-4 py-3 text-left text-sm font-medium text-gray-600 bg-white border-b border-gray-200 whitespace-nowrap;
 }
 
 .brightlocal-table td {
