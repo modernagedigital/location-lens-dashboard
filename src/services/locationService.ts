@@ -5,26 +5,6 @@ export interface Location {
   address: string;
   detailedInfo: string;
   metrics: {
-    visitors: {
-      count: number;
-      trend: 'up' | 'down';
-      percentage: number;
-    };
-    revenue: {
-      amount: number;
-      trend: 'up' | 'down';
-      percentage: number;
-    };
-    engagement: {
-      score: number;
-      trend: 'up' | 'down';
-      percentage: number;
-    };
-    satisfaction: {
-      score: number;
-      trend: 'up' | 'down';
-      percentage: number;
-    };
     reviews: {
       count: number;
       trend: 'up' | 'down';
@@ -45,6 +25,11 @@ export interface Location {
       trend: 'up' | 'down';
       percentage: number;
     };
+    satisfaction: {
+      count: number;
+      trend: 'up' | 'down';
+      percentage: number;
+    };
   };
   reportStatus: 'available' | 'pending' | 'none';
   isFavorite: boolean;
@@ -57,26 +42,6 @@ const generateRandomMetrics = () => {
   };
 
   return {
-    visitors: {
-      count: Math.floor(Math.random() * 5000),
-      trend: getRandomTrend(),
-      percentage: Math.floor(Math.random() * 30),
-    },
-    revenue: {
-      amount: Math.floor(Math.random() * 10000),
-      trend: getRandomTrend(),
-      percentage: Math.floor(Math.random() * 20),
-    },
-    engagement: {
-      score: Math.floor(Math.random() * 10),
-      trend: getRandomTrend(),
-      percentage: Math.floor(Math.random() * 25),
-    },
-    satisfaction: {
-      score: Math.floor(Math.random() * 10),
-      trend: getRandomTrend(),
-      percentage: Math.floor(Math.random() * 15),
-    },
     reviews: {
       count: Math.floor(Math.random() * 500),
       trend: getRandomTrend(),
@@ -96,6 +61,11 @@ const generateRandomMetrics = () => {
       count: Math.floor(Math.random() * 200),
       trend: getRandomTrend(),
       percentage: Math.floor(Math.random() * 15),
+    },
+    satisfaction: {
+      count: Math.floor(Math.random() * 100),
+      trend: getRandomTrend(),
+      percentage: Math.floor(Math.random() * 10),
     },
   };
 };

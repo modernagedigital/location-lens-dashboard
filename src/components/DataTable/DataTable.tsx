@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Location } from '@/services/locationService';
 import { LocationCell } from './LocationCell';
@@ -96,7 +97,7 @@ const DataTable: React.FC<DataTableProps> = ({ locations }) => {
       duration: 3000,
     });
   };
-  
+
   // Pagination logic
   const totalPages = Math.ceil(locations.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
